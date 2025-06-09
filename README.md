@@ -23,16 +23,12 @@ https://hub.docker.com/r/albreis/traefik-hostmanager
     ```bash
     git clone https://github.com/albreis/manycure.git
     ```
-2. Instale as dependências:
+2. Configure as variáveis de ambiente conforme o arquivo `.env.example`.
+
+3. Rode os containers:
     ```bash
     cd manycure
-    npm install
-    ```
-3. Configure as variáveis de ambiente conforme o arquivo `.env.example`.
-
-4. Inicie o projeto:
-    ```bash
-    npm start
+    docker compose up -d
     ```
 
 ## Contribuição
