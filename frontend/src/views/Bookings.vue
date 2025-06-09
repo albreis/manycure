@@ -1,7 +1,6 @@
 <template>
     <div class="container mx-auto p-6">
         <h1 class="text-3xl font-bold mb-6">Agendamentos</h1>
-
         <table>
             <thead>
                 <tr>

@@ -1,0 +1,270 @@
+{
+  "name": "Login",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "login",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        0
+      ],
+      "id": "90337bf6-145f-424a-9172-e077cd1b1e97",
+      "name": "Webhook",
+      "webhookId": "c497f460-9c93-4a9b-b703-b59d7efc31da"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        1680,
+        0
+      ],
+      "id": "489c3285-87b1-4cf5-ad02-ba2adebd6e8c",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "collection": "users",
+        "options": {},
+        "query": "={\n  \"email\": \"{{ $('Webhook').first().json.body.email }}\"\n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "93078d1d-5a0c-4fda-b47b-049bc9ce895f",
+      "name": "MongoDB",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mongoDb": {
+          "id": "bcQrxmUWuV7qe1eN",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c9800ea8-9c3a-41e3-ac6c-a0ce3db1e96a",
+              "leftValue": "={{ '_id' in $input.first().json }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "72d287f8-153b-4dc9-a03e-c0b8c4c531e0",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"Usuário não existe\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        1020,
+        140
+      ],
+      "id": "456d73c8-8eff-48de-ba99-09a0fd9c760b",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8a2acbee-2abd-4e6f-aebc-be27a4aaa350",
+              "name": "email",
+              "value": "={{ $('Webhook').first().json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "402ef667-16b4-4167-8bfa-3fa7d03400f9",
+              "name": "token",
+              "value": "={{ $json.token }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1100,
+        -100
+      ],
+      "id": "b54797e9-05be-4eef-9ab7-c3bd0e57d9fc",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "collection": "users",
+        "updateKey": "email",
+        "fields": "token",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        1420,
+        -60
+      ],
+      "id": "be40c670-b642-4a1c-8382-bd8072cb71a8",
+      "name": "MongoDB1",
+      "credentials": {
+        "mongoDb": {
+          "id": "bcQrxmUWuV7qe1eN",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "useJson": true,
+        "claimsJson": "={\n  \"email\": \"{{ $('Webhook').first().json.body.email}}\",\n  \"user_id\": \"{{ $('MongoDB').first().json._id}}\"\n}\n",
+        "options": {
+          "kid": "user_id"
+        }
+      },
+      "type": "n8n-nodes-base.jwt",
+      "typeVersion": 1,
+      "position": [
+        680,
+        -100
+      ],
+      "id": "7b051aa6-197c-4e9a-8733-509642735155",
+      "name": "JWT",
+      "credentials": {
+        "jwtAuth": {
+          "id": "78ibQBPjxGPBL0ng",
+          "name": "JWT Auth account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "JWT",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "MongoDB1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JWT": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c1302313-0a0f-45a2-9137-a3c05775bce7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1f1e6849b01cac816f71bb96af43da4f98775e69704548b64f450c7875a564e5"
+  },
+  "id": "589FgAkuHlnd0FkF",
+  "tags": []
+}

@@ -1,0 +1,208 @@
+{
+  "name": "Bookings",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "bookings-list",
+        "authentication": "jwtAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -340,
+        -40
+      ],
+      "id": "6a49b655-b040-44b7-bdf1-0663319cd30c",
+      "name": "Webhook",
+      "webhookId": "b366f19f-ae52-4312-a506-86ae331b2381",
+      "credentials": {
+        "jwtAuth": {
+          "id": "78ibQBPjxGPBL0ng",
+          "name": "JWT Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "decode",
+        "token": "={{ $('Webhook').first().json.headers.authorization.split(' ').pop() }}",
+        "options": {
+          "complete": true
+        }
+      },
+      "type": "n8n-nodes-base.jwt",
+      "typeVersion": 1,
+      "position": [
+        -100,
+        -40
+      ],
+      "id": "437041f7-2dbb-45fb-bab1-6d0d624fa888",
+      "name": "JWT",
+      "credentials": {
+        "jwtAuth": {
+          "id": "78ibQBPjxGPBL0ng",
+          "name": "JWT Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "users",
+        "options": {},
+        "query": "={\n  \"email\": \"{{$('JWT').first().json.payload.email}}\"\n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        -40
+      ],
+      "id": "e25892bd-e2bc-4748-ba47-04e4302f5448",
+      "name": "MongoDB",
+      "credentials": {
+        "mongoDb": {
+          "id": "bcQrxmUWuV7qe1eN",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "bookings",
+        "options": {
+          "sort": "={\n  \"created_at\": -1\n}"
+        },
+        "query": "={\n  \"user_id\": \"{{ $('MongoDB').first().json._id }}\"\n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        380,
+        -40
+      ],
+      "id": "b20d5acb-1158-4d21-92b5-85ffbe037a9c",
+      "name": "MongoDB1",
+      "credentials": {
+        "mongoDb": {
+          "id": "bcQrxmUWuV7qe1eN",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        600,
+        -40
+      ],
+      "id": "f81b4406-50ea-4613-822b-fe0a81aabb68",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "api.manycure.app",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImVtYWlsIn0.eyJlbWFpbCI6ImNvbnRhdG9AdW1hdGFncG9yZGlhLmNvbS5iciIsImlhdCI6MTc0OTQ0NjEzNn0.wLKp5L28pxwZBi4FaHUYFRw9y-PvhbDtqXe8GbmRLT4",
+            "dnt": "1",
+            "if-none-match": "W/\"4e2-GwzKBCzA9/ZK7XnIV6nJhUL9cuc\"",
+            "origin": "https://manycure.app",
+            "priority": "u=1, i",
+            "referer": "https://manycure.app/",
+            "sec-ch-ua": "\"Google Chrome\";v=\"137\", \"Chromium\";v=\"137\", \"Not/A)Brand\";v=\"24\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-site",
+            "x-forwarded-for": "172.19.0.1",
+            "x-forwarded-host": "api.manycure.app",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "c9ec1e409aa5",
+            "x-real-ip": "172.19.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {},
+          "webhookUrl": "https://api.manycure.app/webhook/bookings-list",
+          "executionMode": "production",
+          "jwtPayload": {
+            "email": "contato@umatagpordia.com.br",
+            "iat": 1749446136
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "JWT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JWT": {
+      "main": [
+        [
+          {
+            "node": "MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB": {
+      "main": [
+        [
+          {
+            "node": "MongoDB1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "664575fa-ae2e-4837-aaf0-2c4a7fce91d2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1f1e6849b01cac816f71bb96af43da4f98775e69704548b64f450c7875a564e5"
+  },
+  "id": "UqJXdHite2tsxJUv",
+  "tags": []
+}

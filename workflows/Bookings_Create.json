@@ -1,0 +1,271 @@
+{
+  "name": "Bookings Create",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bookings",
+        "authentication": "jwtAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -340,
+        -40
+      ],
+      "id": "0ffed516-af2d-44da-ab8f-351195c35ff0",
+      "name": "Webhook",
+      "webhookId": "924931a7-386f-4431-9187-2ad69b17f34f",
+      "credentials": {
+        "jwtAuth": {
+          "id": "78ibQBPjxGPBL0ng",
+          "name": "JWT Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        1000,
+        -40
+      ],
+      "id": "e32b2017-bb04-42b6-bb3f-c9cf1bad3999",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "decode",
+        "token": "={{ $('Webhook').first().json.headers.authorization.split(' ').pop() }}",
+        "options": {
+          "complete": true
+        }
+      },
+      "type": "n8n-nodes-base.jwt",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -40
+      ],
+      "id": "db87cde2-1545-47f7-8f6e-39f791a0c788",
+      "name": "JWT",
+      "credentials": {
+        "jwtAuth": {
+          "id": "78ibQBPjxGPBL0ng",
+          "name": "JWT Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "users",
+        "options": {},
+        "query": "={\n  \"email\": \"{{$('JWT').first().json.payload.email}}\"\n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        -40
+      ],
+      "id": "0b1d7419-f717-459c-9ee4-35cabe3b5fcd",
+      "name": "MongoDB",
+      "credentials": {
+        "mongoDb": {
+          "id": "bcQrxmUWuV7qe1eN",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a34d63a6-ad6f-46e4-a114-ec52e2fb57ad",
+              "name": "name",
+              "value": "={{ $('Webhook').first().json.body.name }}",
+              "type": "string"
+            },
+            {
+              "id": "4bee2226-7d17-4655-ab7c-395fcef5137b",
+              "name": "phone",
+              "value": "={{ $('Webhook').first().json.body.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "cab4d30c-29a2-447c-856d-26e105dc7bf2",
+              "name": "date",
+              "value": "={{ $('Webhook').first().json.body.date }}",
+              "type": "string"
+            },
+            {
+              "id": "00b426e9-33a2-4b09-872f-25b877fc69b1",
+              "name": "time",
+              "value": "={{ $('Webhook').first().json.body.time }}",
+              "type": "string"
+            },
+            {
+              "id": "09cb6ab5-97e9-4df3-b024-a9f3644b1797",
+              "name": "service",
+              "value": "={{ $('Webhook').first().json.body.service }}",
+              "type": "string"
+            },
+            {
+              "id": "cb449792-6b53-460d-99d7-66a970bf2808",
+              "name": "user_id",
+              "value": "={{ $('MongoDB').first().json._id.toString() }}",
+              "type": "string"
+            },
+            {
+              "id": "651156f8-22fb-4964-a242-00234fdff780",
+              "name": "created_at",
+              "value": "={{ (new Date).toLocaleString() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        -40
+      ],
+      "id": "d0dcd3f5-b83e-4eb8-9289-a5c3e9491071",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "bookings",
+        "fields": "name,phone,date,time,service,user_id,created_at",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        740,
+        -40
+      ],
+      "id": "18aedcae-d8b1-498e-9b5f-40be4e64e430",
+      "name": "MongoDB1",
+      "credentials": {
+        "mongoDb": {
+          "id": "bcQrxmUWuV7qe1eN",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $('JWT').first().json.payload.email }}",
+        "toEmail": "agendamentos@manycure.app",
+        "subject": "Novo agendanmento",
+        "html": "=Nome: {{ $('Edit Fields').first().json.name }}<br>\nPhone: {{ $('Edit Fields').first().json.phone }}<br>\nDate: {{ $('Edit Fields').first().json.date }}<br>\nTime: {{ $('Edit Fields').first().json.time }}<br>\nService: {{ $('Edit Fields').first().json.service }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1220,
+        -140
+      ],
+      "id": "e5e4ecc6-be53-4b39-88d0-294e655217cb",
+      "name": "Send Email",
+      "webhookId": "fe6f0a1b-642c-4e79-a2d3-72db628721df",
+      "credentials": {
+        "smtp": {
+          "id": "IXXR9OhNKkrnHxet",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "JWT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JWT": {
+      "main": [
+        [
+          {
+            "node": "MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "MongoDB1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "201308b0-e530-4333-8456-c4eac7aaeefa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1f1e6849b01cac816f71bb96af43da4f98775e69704548b64f450c7875a564e5"
+  },
+  "id": "sSZrKYGcq3al6L46",
+  "tags": []
+}
