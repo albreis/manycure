@@ -1,0 +1,193 @@
+name: n8n
+volumes:
+  db:
+  n8n_storage:
+  redis_storage:
+  mongo_storage:
+
+networks:
+  n8n:
+  mongo:
+  www:
+    external: true
+
+x-shared: &shared
+  restart: always
+  image: manycure/n8n
+  build: .
+  environment:
+    - DB_TYPE=postgresdb
+    - DB_POSTGRESDB_HOST=postgres
+    - DB_POSTGRESDB_PORT=5432
+    - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
+    - DB_POSTGRESDB_USER=${POSTGRES_NON_ROOT_USER}
+    - DB_POSTGRESDB_PASSWORD=${POSTGRES_NON_ROOT_PASSWORD}
+    - EXECUTIONS_MODE=queue
+    - N8N_FEATURE_FLAG_INCLUDE_CREDENTIALS_IN_EXECUTION_DATA=true
+    - EXECUTIONS_PROCESS=queue
+    - QUEUE_BULL_REDIS_PORT=6379
+    - QUEUE_BULL_REDIS_DB=0
+    - QUEUE_CONCURRENCY=10
+    - QUEUE_MODE=redis
+    - QUEUE_BULL_REDIS_HOST=redis
+    - QUEUE_HEALTH_CHECK_ACTIVE=true
+    - N8N_ENCRYPTION_KEY=${ENCRYPTION_KEY}
+    - N8N_EMAIL_MODE=smtp
+    - N8N_SMTP_HOST=mailhog
+    - N8N_SMTP_PORT=1025
+    - N8N_SMTP_USER=
+    - N8N_SMTP_PASS=
+    - N8N_SMTP_SENDER=contato@manycure.app
+    - N8N_HOST=api.manycure.app
+    - N8N_PROTOCOL=https
+    - NODE_TLS_REJECT_UNAUTHORIZED=1
+    - N8N_PORT=443
+  links:
+    - postgres
+    - redis
+  volumes:
+    - n8n_storage:/home/node/.n8n
+  depends_on:
+    redis:
+      condition: service_healthy
+    postgres:
+      condition: service_healthy
+
+services:
+  front:
+    image: manycure/n8n-frontend
+    restart: always
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    build:
+      context: ./frontend
+      dockerfile: ../front.Dockerfile
+    networks:
+      - www
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+      - "traefik.http.routers.front-http.rule=Host(`manycure.app`)"
+      - "traefik.http.routers.front-http.entrypoints=http"
+      - "traefik.http.routers.front-https.rule=Host(`manycure.app`)"
+      - "traefik.http.routers.front-https.entrypoints=https"
+      - "traefik.http.routers.front-https.tls=true"
+      - "traefik.http.routers.front-https.tls.certresolver=cloudflare"
+      - "traefik.http.services.front-https.loadbalancer.server.port=5173"
+  mongo:
+    image: mongo
+    restart: always
+    volumes:
+      - mongo_storage:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+    networks:
+      - n8n
+      - mongo
+    ports:
+      - "27017:27017"
+  mailhog:
+    image: mailhog/mailhog
+    restart: always
+    ports:
+      - "8025:8025"
+    networks:
+      - n8n
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_NON_ROOT_USER=${POSTGRES_NON_ROOT_USER}
+      - POSTGRES_NON_ROOT_PASSWORD=${POSTGRES_NON_ROOT_PASSWORD}
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - n8n
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "28080:80"
+    depends_on:
+      - postgres
+    networks:
+      - n8n
+  redis:
+    image: redis:6-alpine
+    restart: always
+    volumes:
+      - redis_storage:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - n8n
+  n8n:
+    <<: *shared
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+      - "traefik.http.routers.n8n-http.rule=Host(`api.manycure.app`)"
+      - "traefik.http.routers.n8n-http.entrypoints=http"
+      - "traefik.http.routers.n8n-https.rule=Host(`api.manycure.app`)"
+      - "traefik.http.routers.n8n-https.entrypoints=https"
+      - "traefik.http.routers.n8n-https.tls=true"
+      - "traefik.http.routers.n8n-https.tls.certresolver=cloudflare"
+      - "traefik.http.services.n8n-https.loadbalancer.server.port=443"
+      - "traefik.http.routers.n8n-https.middlewares=cors"
+      - "traefik.http.middlewares.cors.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
+      - "traefik.http.middlewares.cors.headers.accesscontrolalloworiginlist=*"
+      - "traefik.http.middlewares.cors.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.cors.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.cors.headers.addvaryheader=true"
+    networks:
+      - www
+      - n8n
+      - mongo
+  n8n-worker:
+    <<: *shared
+    command: worker
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
+      - DB_POSTGRESDB_USER=${POSTGRES_NON_ROOT_USER}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_NON_ROOT_PASSWORD}
+      - QUEUE_MODE=redis
+      - QUEUE_BULL_REDIS_HOST=redis
+      - QUEUE_BULL_REDIS_PORT=6379
+      - QUEUE_BULL_REDIS_DB=0
+      - N8N_ENCRYPTION_KEY=${ENCRYPTION_KEY}
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    depends_on:
+      - n8n
+    networks:
+      - n8n
