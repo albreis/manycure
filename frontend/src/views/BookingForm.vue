@@ -49,8 +49,8 @@
                 required
             >
                 <option value="" disabled>Selecione um horário</option>
-                <option v-for="time in form.date.times" :key="time" :value="time">
-                    {{ time }}
+                <option v-for="hour in form.date.hours" :key="hour" :value="hour">
+                    {{ hour }}
                 </option>
             </select>
         </div>
