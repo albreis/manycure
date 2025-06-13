@@ -104,6 +104,18 @@ const services = ref([
     { id: 3, name: 'Manicure' }
 ]);
 
+const fetchCalendar = async () => {
+    try {
+        const response = await ApiService.get('calendar');
+        availableTimes.value = response.filter(item => item.hours?.length > 0);
+        console.log('Horários disponíveis:', availableTimes.value);
+    } catch (error) {
+        console.error('Erro ao buscar horários disponíveis:', error);
+    }
+};
+
+fetchCalendar()
+
 const dayOfWeek = day => {
     const date = new Date(`${day} 00:00:00`);
     const options = { weekday: 'long' };
