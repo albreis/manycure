@@ -1,0 +1,193 @@
+{
+  "name": "Calendars",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "calendar",
+        "authentication": "jwtAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -340,
+        -40
+      ],
+      "id": "45bad7ad-4822-47c9-b56a-d6fc669a060a",
+      "name": "Webhook",
+      "webhookId": "14d94d55-6ffa-4ccf-bd0e-1ed9484ce848",
+      "credentials": {
+        "jwtAuth": {
+          "id": "78ibQBPjxGPBL0ng",
+          "name": "JWT Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "decode",
+        "token": "={{ $('Webhook').first().json.headers.authorization.split(' ').pop() }}",
+        "options": {
+          "complete": true
+        }
+      },
+      "type": "n8n-nodes-base.jwt",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -40
+      ],
+      "id": "e2f70947-de3b-436f-a9ce-2d3cc36e342f",
+      "name": "JWT",
+      "credentials": {
+        "jwtAuth": {
+          "id": "78ibQBPjxGPBL0ng",
+          "name": "JWT Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "calendar",
+        "options": {
+          "sort": "{\n  \"date\": -1\n}"
+        }
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        100,
+        -40
+      ],
+      "id": "14e4032f-c712-4f23-a4cd-810c10062f84",
+      "name": "MongoDB1",
+      "credentials": {
+        "mongoDb": {
+          "id": "bcQrxmUWuV7qe1eN",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        -40
+      ],
+      "id": "7aa7db4c-3cfd-4c83-8b57-d57a2e9171e0",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "api.manycure.app",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+            "content-length": "541",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImVtYWlsIn0.eyJlbWFpbCI6ImNvbnRhdG9AdW1hdGFncG9yZGlhLmNvbS5iciIsImlhdCI6MTc0OTQ0NjEzNn0.wLKp5L28pxwZBi4FaHUYFRw9y-PvhbDtqXe8GbmRLT4",
+            "cache-control": "no-cache",
+            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryJEtaLMVHyZuyRaUF",
+            "dnt": "1",
+            "origin": "https://manycure.app",
+            "pragma": "no-cache",
+            "priority": "u=1, i",
+            "referer": "https://manycure.app/",
+            "sec-ch-ua": "\"Google Chrome\";v=\"137\", \"Chromium\";v=\"137\", \"Not/A)Brand\";v=\"24\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-site",
+            "x-forwarded-for": "172.19.0.1",
+            "x-forwarded-host": "api.manycure.app",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "c9ec1e409aa5",
+            "x-real-ip": "172.19.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "date": "2025-06-13",
+            "hours[]": [
+              "14:00",
+              "14:30",
+              "15:00",
+              "15:30"
+            ]
+          },
+          "webhookUrl": "https://api.manycure.app/webhook/admin/calendar",
+          "executionMode": "production",
+          "jwtPayload": {
+            "email": "contato@umatagpordia.com.br",
+            "iat": 1749446136
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "JWT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JWT": {
+      "main": [
+        [
+          {
+            "node": "MongoDB1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "764c4f5e-882c-44a4-8f2a-f565a75d0834",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1f1e6849b01cac816f71bb96af43da4f98775e69704548b64f450c7875a564e5"
+  },
+  "id": "inS0E6F8iSBDaH46",
+  "tags": [
+    {
+      "createdAt": "2025-06-13T07:30:34.041Z",
+      "updatedAt": "2025-06-13T07:30:34.041Z",
+      "id": "AgDs3J2qmEqP65Pf",
+      "name": "user"
+    }
+  ]
+}
