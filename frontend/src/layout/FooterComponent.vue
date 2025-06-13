@@ -27,6 +27,7 @@
                             <i class="fa-brands fa-pinterest"></i>
                         </span>
                     </div>
+                    <AdminAuth class="mt-4" />
                 </div>
                 
                 <div>
@@ -76,3 +77,6 @@
         </div>
     </footer>
 </template>
+<script setup>
+import AdminAuth from '../components/AdminAuth.vue';
+</script>
