@@ -1,0 +1,392 @@
+{
+  "name": "Admin - Login",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "admin/login",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        0
+      ],
+      "id": "5b93656a-7322-4852-9037-f53b001df85d",
+      "name": "Webhook",
+      "webhookId": "d73352d0-f1e8-418a-8177-372202173bdc"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        1680,
+        0
+      ],
+      "id": "f3c5ecb8-fbe9-421c-8e72-a0cd80fa209c",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "collection": "admins",
+        "options": {},
+        "query": "={\n  \"email\": \"{{ $('Webhook').first().json.body.email }}\",\n  \"password\": \"{{ $('Webhook').first().json.body.password }}\"\n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e57ee4aa-6844-48bc-8a70-e941ee19894f",
+      "name": "MongoDB",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mongoDb": {
+          "id": "bcQrxmUWuV7qe1eN",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c9800ea8-9c3a-41e3-ac6c-a0ce3db1e96a",
+              "leftValue": "={{ '_id' in $input.first().json }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "6b7a958e-3252-47dc-9cf0-15a6251c2de9",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"Usuário não existe\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        540,
+        200
+      ],
+      "id": "702ae47a-c33e-4bc8-b338-1669247d8bea",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8a2acbee-2abd-4e6f-aebc-be27a4aaa350",
+              "name": "email",
+              "value": "={{ $('Webhook').first().json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "402ef667-16b4-4167-8bfa-3fa7d03400f9",
+              "name": "token",
+              "value": "={{ $json.token }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1100,
+        -100
+      ],
+      "id": "7f13ff9b-3d6f-44f6-9a84-fdefc67fac22",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "collection": "admins",
+        "updateKey": "email",
+        "fields": "token",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        1420,
+        -60
+      ],
+      "id": "36d38f44-c184-4284-8ae7-89795463c594",
+      "name": "MongoDB1",
+      "credentials": {
+        "mongoDb": {
+          "id": "bcQrxmUWuV7qe1eN",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "useJson": true,
+        "claimsJson": "={\n  \"email\": \"{{ $('Webhook').first().json.body.email}}\",\n  \"user_id\": \"{{ $('MongoDB').first().json._id}}\"\n}\n",
+        "options": {
+          "kid": "user_id"
+        }
+      },
+      "type": "n8n-nodes-base.jwt",
+      "typeVersion": 1,
+      "position": [
+        680,
+        -100
+      ],
+      "id": "104c9bd2-577d-4f10-82d9-311c5ada5267",
+      "name": "JWT",
+      "credentials": {
+        "jwtAuth": {
+          "id": "78ibQBPjxGPBL0ng",
+          "name": "JWT Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "admins",
+        "fields": "email,password",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        1100,
+        200
+      ],
+      "id": "e034e45b-c4aa-4b16-b4f4-a0b560eb67f4",
+      "name": "MongoDB2",
+      "credentials": {
+        "mongoDb": {
+          "id": "bcQrxmUWuV7qe1eN",
+          "name": "MongoDB account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4ded59b2-9c0f-4279-a041-1fb10b0909c3",
+              "name": "email",
+              "value": "={{ $('Webhook').item.json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "441b2ec1-3781-45f8-9d7f-684305ffb728",
+              "name": "password",
+              "value": "={{ $('Webhook').item.json.body.password }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        760,
+        100
+      ],
+      "id": "2dc592f1-7fbe-4b43-99a4-f71d16b3a7cc",
+      "name": "Edit Fields1"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "api.manycure.app",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+            "content-length": "264",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImVtYWlsIn0.eyJlbWFpbCI6ImNvbnRhdG9AdW1hdGFncG9yZGlhLmNvbS5iciIsImlhdCI6MTc0OTQ0NjEzNn0.wLKp5L28pxwZBi4FaHUYFRw9y-PvhbDtqXe8GbmRLT4",
+            "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryseFcGBoTAlSY09LK",
+            "dnt": "1",
+            "origin": "https://manycure.app",
+            "priority": "u=1, i",
+            "referer": "https://manycure.app/",
+            "sec-ch-ua": "\"Google Chrome\";v=\"137\", \"Chromium\";v=\"137\", \"Not/A)Brand\";v=\"24\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-site",
+            "x-forwarded-for": "172.19.0.1",
+            "x-forwarded-host": "api.manycure.app",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "c9ec1e409aa5",
+            "x-real-ip": "172.19.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "email": "contato@umatagpordia.com.br",
+            "password": "123432"
+          },
+          "webhookUrl": "https://api.manycure.app/webhook/admin/login",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "JWT",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "MongoDB1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JWT": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "MongoDB2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a7b71d45-b80a-4b6a-a484-6b794fd882c8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1f1e6849b01cac816f71bb96af43da4f98775e69704548b64f450c7875a564e5"
+  },
+  "id": "jNkY47RrDwdR79Xd",
+  "tags": [
+    {
+      "name": "admin",
+      "id": "1RTic9B4vYFKAfkn",
+      "createdAt": "2025-06-13T06:36:27.998Z",
+      "updatedAt": "2025-06-13T06:36:27.998Z"
+    }
+  ]
+}

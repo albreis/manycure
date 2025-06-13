@@ -3,7 +3,7 @@
         <div v-if="isAuthenticated">
             <divc class="flex items-center space-x-4">
                 <router-link :to="{name: 'account'}" class="px-4 py-2 border border-skyBlue text-skyBlue font-semibold rounded-lg hover:bg-skyBlue hover:text-white transition-colors">Account</router-link>
-                <button @click="logout" class="px-4 py-2 border border-gray-500 text-gray-500 font-semibold rounded-lg hover:bg-skyBlue hover:text-white transition-colors">Logout</button>
+                <button @click="authStore.logout" class="px-4 py-2 border border-gray-500 text-gray-500 font-semibold rounded-lg hover:bg-skyBlue hover:text-white transition-colors">Logout</button>
             </divc>
         </div>
         <div v-else>
@@ -19,7 +19,4 @@ import { useAuthStore } from '@/stores/authStore';
 import { computed } from 'vue';
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
-const logout = () => {
-    authStore.logout();
-};
 </script>

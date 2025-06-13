@@ -174,8 +174,8 @@
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
-        1220,
-        -140
+        2180,
+        -180
       ],
       "id": "e5e4ecc6-be53-4b39-88d0-294e655217cb",
       "name": "Send Email",
@@ -186,9 +186,132 @@
           "name": "SMTP account"
         }
       }
+    },
+    {
+      "parameters": {
+        "collection": "calendar",
+        "options": {},
+        "query": "={\n  \"date\": \"{{ $json.date }}\"\n} "
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        1220,
+        -140
+      ],
+      "id": "46ba89aa-0ad6-485c-8e4e-8a857b31aa01",
+      "name": "MongoDB2",
+      "credentials": {
+        "mongoDb": {
+          "id": "bcQrxmUWuV7qe1eN",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0c93c1ff-6228-4396-b978-85e440566d4c",
+              "name": "date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "a2a85077-c1e7-4a68-a27f-0ba263a4d19b",
+              "name": "hours",
+              "value": "={{ $json.hours.filter(hour => hour != $('Respond to Webhook').item.json.time) }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1440,
+        -140
+      ],
+      "id": "75b13fb2-3bdd-4da3-81c2-b6e09b1fdbcb",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "collection": "calendar",
+        "updateKey": "date",
+        "fields": "hours",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        1660,
+        -140
+      ],
+      "id": "83845341-e4ca-4a4c-9cff-4c2b39f23817",
+      "name": "MongoDB3",
+      "credentials": {
+        "mongoDb": {
+          "id": "bcQrxmUWuV7qe1eN",
+          "name": "MongoDB account"
+        }
+      }
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "api.manycure.app",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+            "content-length": "551",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImVtYWlsIn0.eyJlbWFpbCI6ImNvbnRhdG9AdW1hdGFncG9yZGlhLmNvbS5iciIsImlhdCI6MTc0OTQ0NjEzNn0.wLKp5L28pxwZBi4FaHUYFRw9y-PvhbDtqXe8GbmRLT4",
+            "cache-control": "no-cache",
+            "content-type": "multipart/form-data; boundary=----WebKitFormBoundary41tBYKYkjxf6wAdv",
+            "dnt": "1",
+            "origin": "https://manycure.app",
+            "pragma": "no-cache",
+            "priority": "u=1, i",
+            "referer": "https://manycure.app/",
+            "sec-ch-ua": "\"Google Chrome\";v=\"137\", \"Chromium\";v=\"137\", \"Not/A)Brand\";v=\"24\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-site",
+            "x-forwarded-for": "172.19.0.1",
+            "x-forwarded-host": "api.manycure.app",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "c9ec1e409aa5",
+            "x-real-ip": "172.19.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "name": "Everaldo",
+            "phone": "1234567890",
+            "date": "2025-06-15",
+            "time": "14:30",
+            "service": "Corte de Cabelo"
+          },
+          "webhookUrl": "https://api.manycure.app/webhook/bookings",
+          "executionMode": "production",
+          "jwtPayload": {
+            "email": "contato@umatagpordia.com.br",
+            "iat": 1749446136
+          }
+        }
+      }
+    ]
+  },
   "connections": {
     "Webhook": {
       "main": [
@@ -249,6 +372,39 @@
       "main": [
         [
           {
+            "node": "MongoDB2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "MongoDB3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB3": {
+      "main": [
+        [
+          {
             "node": "Send Email",
             "type": "main",
             "index": 0
@@ -261,7 +417,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "201308b0-e530-4333-8456-c4eac7aaeefa",
+  "versionId": "01ea68a5-2ec4-4ff9-bbd4-cb3720b3b759",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "1f1e6849b01cac816f71bb96af43da4f98775e69704548b64f450c7875a564e5"

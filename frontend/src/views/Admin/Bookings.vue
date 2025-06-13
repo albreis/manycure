@@ -27,7 +27,7 @@
 </template>
 <script setup>
 import { ref } from 'vue';
-import ApiService from '@/services/ApiService';
+import AdminApiService from '@/services/AdminApiService';
 
 const bookings = ref([]);
 
@@ -44,7 +44,7 @@ const formatDate = (date, showHour) => {
 
 const fetchBookings = async () => {
     try {
-        const response = await ApiService.get('bookings-list');
+        const response = await AdminApiService.get('bookings-list');
         bookings.value = response;
     } catch (error) {
         console.error('Error fetching bookings:', error);
