@@ -34,7 +34,7 @@
             >
                 <option value="" disabled>Selecione um horário</option>
                 <option v-for="date in availableTimes" :key="date" :value="date">
-                    {{ date.weekday }}
+                    {{ formatDate(date.date) }} ({{  dayOfWeek(date.date) }})
                 </option>
             </select>
             <input type="hidden" name="date" :value="form.date?.date" />
