@@ -98,28 +98,7 @@ const form = ref({
 
 const formData = ref(null);
 
-const availableTimes = ref([
-    {
-        weekday: 'Segunda-feira',
-        times: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00']       
-    },
-    {
-        weekday: 'Terça-feira',
-        times: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00']
-    },
-    {
-        weekday: 'Quarta-feira',
-        times: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00']
-    },
-    {
-        weekday: 'Quinta-feira',
-        times: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00']
-    },
-    {
-        weekday: 'Sexta-feira',
-        times: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00']
-    }
-]);
+const availableTimes = ref([]);
 const services = ref([
     { id: 1, name: 'Corte de Cabelo' },
     { id: 2, name: 'Barba' },
