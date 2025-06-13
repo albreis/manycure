@@ -89,8 +89,8 @@ const route = useRoute();
 const router = useRouter();
 
 const form = ref({
-    name: 'Everaldo',
-    phone: '1234567890',
+    name: '',
+    phone: '',
     date: null,
     time: null,
     service: ''
