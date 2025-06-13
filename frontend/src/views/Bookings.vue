@@ -15,9 +15,9 @@
         <tbody>
             <tr v-for="booking in bookings" :key="booking.id">
                 <td>{{ booking.name }}</td>
-                <td>{{ booking.created_at }}</td>
+                <td>{{ formatDate(booking.created_at, true) }}</td>
                 <td>{{ booking.phone }}</td>
-                <td>{{ booking.date }}</td>
+                <td>{{ formatDate(`${booking.date} 00:00:00`) }}</td>
                 <td>{{ booking.time }}</td>
                 <td>{{ booking.service }}</td>
             </tr>
@@ -30,6 +30,17 @@ import { ref } from 'vue';
 import ApiService from '@/services/ApiService';
 
 const bookings = ref([]);
+
+const formatDate = (date, showHour) => {
+    if (!date) return '';
+    const d = new Date(date);
+    const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+    if (showHour) {
+        options.hour = '2-digit';
+        options.minute = '2-digit';
+    }
+    return d.toLocaleDateString(navigator.language, options);
+};
 
 const fetchBookings = async () => {
     try {
