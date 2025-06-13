@@ -37,7 +37,7 @@
                     {{ date.weekday }}
                 </option>
             </select>
-            <input type="hidden" name="date" :value="form.date ? form.date.weekday : ''" />
+            <input type="hidden" name="date" :value="form.date?.date" />
         </div>
         <div class="mb-4" v-if="form.date">
             <label class="block mb-1 font-medium" for="time">Horário</label>
