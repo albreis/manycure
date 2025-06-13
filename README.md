@@ -13,17 +13,43 @@ Manycure é um projeto desenvolvido para facilitar o gerenciamento de serviços 
 
 #### Traefik Hostmanager
 
-https://hub.docker.com/r/albreis/traefik-hostmanager
+https://hub.docker.com/r/albreis/traefik-hostmanager/
 
 #### N8N
+
+https://n8n.io/
+
 #### Docker
+
+https://www.docker.com/
+
 #### Traefik
+
+https://traefik.io/traefik/
+
 #### Mongo DB
+
+https://www.mongodb.com/
+
 #### JWT
+
+https://jwt.io/
+
 #### Redis
+
+https://redis.io/
+
 #### PostgreSQL
+
+https://www.postgresql.org/
+
 #### VueJS
+
+https://vuejs.org/
+
 #### UXPilot.ai
+
+https://uxpilot.ai/
 
 ## Instalação
 
