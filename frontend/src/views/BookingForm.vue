@@ -140,7 +140,7 @@ const submitForm = () => {
     ApiService.post('bookings', new FormData(formData.value))
         .then(() => {
             message.value = ('Serviço agendado com sucesso!');
-            // router.push({ name: 'Bookings' });
+            router.push({ name: 'bookings' });
         })
         .catch(error => {
             console.error('Erro ao agendar serviço:', error);
